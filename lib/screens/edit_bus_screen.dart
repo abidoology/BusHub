@@ -43,8 +43,6 @@ class _EditBusScreenState extends State<EditBusScreen> {
     setState(() {
       _stations.add(station);
       _faresFromSource[station] = fare;
-      _stationController.clear();
-      _fareController.clear();
     });
   }
 
@@ -55,13 +53,34 @@ class _EditBusScreenState extends State<EditBusScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    _busIdController.dispose();
-    _busNameController.dispose();
-    _stationController.dispose();
-    _fareController.dispose();
-    super.dispose();
+  void _editFare(String station, double currentFare) {
+    final controller = TextEditingController(text: currentFare.toString());
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Edit Fare'),
+        content: TextField(controller: controller),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              double? newFare = double.tryParse(controller.text);
+              if (newFare != null) {
+                setState(() {
+                  _faresFromSource[station] = newFare;
+                });
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Update'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -73,7 +92,7 @@ class _EditBusScreenState extends State<EditBusScreen> {
         foregroundColor: Colors.white,
       ),
       body: const Center(
-        child: Text('Station Logic Added'),
+        child: Text('Fare Edit Added'),
       ),
     );
   }
