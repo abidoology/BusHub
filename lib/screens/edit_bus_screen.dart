@@ -17,7 +17,6 @@ class _EditBusScreenState extends State<EditBusScreen> {
 
   late TextEditingController _busIdController;
   late TextEditingController _busNameController;
-
   final _stationController = TextEditingController();
   final _fareController = TextEditingController();
 
@@ -33,6 +32,27 @@ class _EditBusScreenState extends State<EditBusScreen> {
     _busNameController = TextEditingController(text: widget.bus.busName);
     _stations = List.from(widget.bus.stations);
     _faresFromSource = Map.from(widget.bus.faresFromSource);
+  }
+
+  void _addStation() {
+    String station = _stationController.text.trim();
+    double? fare = double.tryParse(_fareController.text);
+
+    if (station.isEmpty || fare == null) return;
+
+    setState(() {
+      _stations.add(station);
+      _faresFromSource[station] = fare;
+      _stationController.clear();
+      _fareController.clear();
+    });
+  }
+
+  void _removeStation(String station) {
+    setState(() {
+      _stations.remove(station);
+      _faresFromSource.remove(station);
+    });
   }
 
   @override
@@ -53,7 +73,7 @@ class _EditBusScreenState extends State<EditBusScreen> {
         foregroundColor: Colors.white,
       ),
       body: const Center(
-        child: Text('Edit Screen Base'),
+        child: Text('Station Logic Added'),
       ),
     );
   }
