@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "962799677345",
+    "project_id": "bushub-6b935",
+    "storage_bucket": "bushub-6b935.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:962799677345:android:eb7dda39f0dac6938d65e0",
+        "android_client_info": {
+          "package_name": "com.example.bushub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAoLGsQPzlJeFousTDI8x14GNhqwx_afU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
