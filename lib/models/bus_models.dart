@@ -18,4 +18,14 @@ class BusModel {
     required this.stations,
     required this.faresFromSource,
   });
+
+  // Convert BusModel to Map for Firestore
+  Map<String, dynamic> toMap() {
+    return {
+      'busId': busId,
+      'busName': busName,
+      'stations': stations,
+      'faresFromSource': faresFromSource,
+    };
+  }
 }
