@@ -1,4 +1,5 @@
 // Admin Dashboard Screen - Main admin control panel
+// Shows two buttons: Add Bus and Bus Details
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -111,7 +112,6 @@ class AdminDashboardScreen extends StatelessWidget {
     // If confirmed, logout
     if (confirm == true && context.mounted) {
       await FirebaseAuth.instance.signOut();
-      if (!context.mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
@@ -275,7 +275,7 @@ class AdminDashboardScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

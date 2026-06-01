@@ -1,6 +1,9 @@
+// Admin Login Screen - For admin authentication
+// Only accessible from top-right Admin button on Home Screen
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/admin_seed_service.dart';
+import 'admin_dashboard_screen.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({Key? key}) : super(key: key);
@@ -50,7 +53,15 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // The auth-state gate in main.dart will route to dashboard automatically.
+      // If successful, navigate to Admin Dashboard
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AdminDashboardScreen(),
+          ),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       // Handle Firebase Auth errors
       String errorMessage = 'Login failed';
@@ -155,7 +166,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: 'Email',
-                        hintText: AdminSeedService.defaultAdminEmail,
+                        hintText: 'admin@example.com',
                         prefixIcon: const Icon(Icons.email),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -263,7 +274,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Default admin: ${AdminSeedService.defaultAdminEmail} / ${AdminSeedService.defaultAdminPassword}',
+                              'Only authorized admins can login',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.blue.shade700,

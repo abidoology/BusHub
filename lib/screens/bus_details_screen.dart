@@ -1,4 +1,5 @@
 // Bus Details Screen - Shows all buses with Edit and Delete options
+// Admin can view, edit, or delete any bus
 
 import 'package:flutter/material.dart';
 import '../models/bus_model.dart';
