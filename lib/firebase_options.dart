@@ -41,48 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAMuJikzYc_CacW1eKzquiKsu38bSoES8o',
-    appId: '1:962799677345:web:2ac488e1496d5ddb8d65e0',
-    messagingSenderId: '962799677345',
-    projectId: 'bushub-6b935',
-    authDomain: 'bushub-6b935.firebaseapp.com',
-    storageBucket: 'bushub-6b935.firebasestorage.app',
-    measurementId: 'G-630H3JHX7K',
+    apiKey: 'AIzaSyAVB9RggdPZFwrir_ke0eXxCY4U28ulPaU',
+    appId: '1:399645072614:web:21b827966d67b630ddaf27',
+    messagingSenderId: '399645072614',
+    projectId: 'fir-e50da',
+    authDomain: 'fir-e50da.firebaseapp.com',
+    storageBucket: 'fir-e50da.firebasestorage.app',
+    measurementId: 'G-2S6PDGPB4M',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBAoLGsQPzlJeFousTDI8x14GNhqwx_afU',
-    appId: '1:962799677345:android:eb7dda39f0dac6938d65e0',
-    messagingSenderId: '962799677345',
-    projectId: 'bushub-6b935',
-    storageBucket: 'bushub-6b935.firebasestorage.app',
+    apiKey: 'AIzaSyC6J-MQB67wXiWuiO3HKYBRhBfD4LRJQJI',
+    appId: '1:399645072614:android:55f101c49ce87a9dddaf27',
+    messagingSenderId: '399645072614',
+    projectId: 'fir-e50da',
+    storageBucket: 'fir-e50da.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDSh_cJWQ1usBBLxbGJdlWAsW82GekfugE',
-    appId: '1:962799677345:ios:5a463aedfedd22188d65e0',
-    messagingSenderId: '962799677345',
-    projectId: 'bushub-6b935',
-    storageBucket: 'bushub-6b935.firebasestorage.app',
-    iosBundleId: 'com.example.bushub',
+    apiKey: 'AIzaSyAU0z8zh1LKCw8c5ihHuaiKAo0cWR4UGi8',
+    appId: '1:399645072614:ios:307a3781fd01d599ddaf27',
+    messagingSenderId: '399645072614',
+    projectId: 'fir-e50da',
+    storageBucket: 'fir-e50da.firebasestorage.app',
+    iosBundleId: 'com.example.dhakaBusRouteFare',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDSh_cJWQ1usBBLxbGJdlWAsW82GekfugE',
-    appId: '1:962799677345:ios:5a463aedfedd22188d65e0',
-    messagingSenderId: '962799677345',
-    projectId: 'bushub-6b935',
-    storageBucket: 'bushub-6b935.firebasestorage.app',
-    iosBundleId: 'com.example.bushub',
+    apiKey: 'AIzaSyAU0z8zh1LKCw8c5ihHuaiKAo0cWR4UGi8',
+    appId: '1:399645072614:ios:307a3781fd01d599ddaf27',
+    messagingSenderId: '399645072614',
+    projectId: 'fir-e50da',
+    storageBucket: 'fir-e50da.firebasestorage.app',
+    iosBundleId: 'com.example.dhakaBusRouteFare',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAMuJikzYc_CacW1eKzquiKsu38bSoES8o',
-    appId: '1:962799677345:web:d1d94c150188994e8d65e0',
-    messagingSenderId: '962799677345',
-    projectId: 'bushub-6b935',
-    authDomain: 'bushub-6b935.firebaseapp.com',
-    storageBucket: 'bushub-6b935.firebasestorage.app',
-    measurementId: 'G-SK31BDPE9W',
+    apiKey: 'AIzaSyAVB9RggdPZFwrir_ke0eXxCY4U28ulPaU',
+    appId: '1:399645072614:web:5ee3998c1fa80379ddaf27',
+    messagingSenderId: '399645072614',
+    projectId: 'fir-e50da',
+    authDomain: 'fir-e50da.firebaseapp.com',
+    storageBucket: 'fir-e50da.firebasestorage.app',
+    measurementId: 'G-R12KZ8SGWE',
   );
 }

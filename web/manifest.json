@@ -1,6 +1,6 @@
 {
-    "name": "bushub",
-    "short_name": "bushub",
+    "name": "dhaka_bus_route_fare",
+    "short_name": "dhaka_bus_route_fare",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

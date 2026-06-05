@@ -1,21 +1,40 @@
 {
   "project_info": {
-    "project_number": "962799677345",
-    "project_id": "bushub-6b935",
-    "storage_bucket": "bushub-6b935.firebasestorage.app"
+    "project_number": "399645072614",
+    "project_id": "fir-e50da",
+    "storage_bucket": "fir-e50da.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:962799677345:android:eb7dda39f0dac6938d65e0",
+        "mobilesdk_app_id": "1:399645072614:android:0d4bc07fa4867568ddaf27",
         "android_client_info": {
-          "package_name": "com.example.bushub"
+          "package_name": "com.example.dhaka_bus_route_and_fare"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBAoLGsQPzlJeFousTDI8x14GNhqwx_afU"
+          "current_key": "AIzaSyC6J-MQB67wXiWuiO3HKYBRhBfD4LRJQJI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:399645072614:android:55f101c49ce87a9dddaf27",
+        "android_client_info": {
+          "package_name": "com.example.dhaka_bus_route_fare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6J-MQB67wXiWuiO3HKYBRhBfD4LRJQJI"
         }
       ],
       "services": {

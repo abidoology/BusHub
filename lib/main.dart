@@ -1,17 +1,33 @@
+// Main entry point of the Dhaka Bus Route & Fare App
+// This app helps people find buses, routes, and fares in Dhaka city
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'firebase_options.dart';
-import 'screens/admin_dashboard_screen.dart';
-import 'screens/admin_login_screen.dart';
-import 'services/admin_seed_service.dart';
+import 'screens/home_screen.dart';
 
+// Main function - initializes Firebase and starts the app
 void main() async {
+  // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-);
-  await AdminSeedService().ensureDefaultAdminExists();
+
+  // Initialize Firebase
+  if (kIsWeb) {
+    // Web: Firebase is initialized in index.html
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyBHzJzFF9FrCy5ywJqE37rKUfrbSKj1xrw",
+        authDomain: "dhaka-route-and-fare.firebaseapp.com",
+        projectId: "dhaka-route-and-fare",
+        storageBucket: "dhaka-route-and-fare.firebasestorage.app",
+        messagingSenderId: "1008390294160",
+        appId: "1:1008390294160:android:351df6f48c6b529026a615",
+      ),
+    );
+  } else {
+    // Mobile: Uses google-services.json (Android) or GoogleService-Info.plist (iOS)
+    await Firebase.initializeApp();
+  }
 
   // Run the app
   runApp(const MyApp());
@@ -45,34 +61,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
-      // Starting screen - Admin auth gate
-      home: const AdminRootScreen(),
-    );
-  }
-}
-
-class AdminRootScreen extends StatelessWidget {
-  const AdminRootScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-
-        if (snapshot.hasData) {
-          return const AdminDashboardScreen();
-        }
-
-        return const AdminLoginScreen();
-      },
+      // Starting screen - Home Screen
+      home: const HomeScreen(),
     );
   }
 }
