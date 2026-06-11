@@ -258,7 +258,6 @@ class _BusListScreenState extends State<BusListScreen> {
                       itemCount: bus.stations.length,
                       itemBuilder: (context, index) {
                         String station = bus.stations[index];
-                        double fare = bus.faresFromSource[station] ?? 0.0;
                         bool isStart = index == 0;
                         bool isEnd = index == bus.stations.length - 1;
 
@@ -340,27 +339,6 @@ class _BusListScreenState extends State<BusListScreen> {
                                                       ? FontWeight.bold
                                                       : FontWeight.w600,
                                                   color: Colors.black87,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal: 12,
-                                                vertical: 4,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.green
-                                                    .withOpacity(0.1),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                '${fare.toStringAsFixed(0)} Tk',
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.green,
                                                 ),
                                               ),
                                             ),
