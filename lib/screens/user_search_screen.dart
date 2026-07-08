@@ -1,3 +1,4 @@
+// lib/screens/user_search_screen.dart
 // User Search Screen - Main user interface for searching buses
 // Uses dropdown menus for source and destination selection
 
@@ -8,7 +9,9 @@ import 'package:latlong2/latlong.dart';
 
 import '../models/bus_model.dart';
 import '../models/location_model.dart';
+import '../models/route_stop_model.dart';
 import '../services/firestore_service.dart';
+import '../services/osm_route_service.dart';
 
 class UserSearchScreen extends StatefulWidget {
   const UserSearchScreen({super.key});
@@ -148,6 +151,414 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
     return message.startsWith('Exception: ')
         ? message.replaceFirst('Exception: ', '')
         : message;
+  }
+
+  // Show bus route details with map
+  void _showBusRouteDetails(BusModel bus, String source, String destination) {
+    final stationsWithFares = _firestoreService.getStationsWithFares(
+      bus,
+      source,
+      destination,
+    );
+
+    final totalFare = _firestoreService.calculateFare(
+      bus,
+      source,
+      destination,
+    );
+
+    // Get route segment with coordinates
+    final routeSegment = _firestoreService.getRouteSegment(
+      bus,
+      source,
+      destination,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.9,
+          minChildSize: 0.6,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    bus.busName,
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Bus ID: ${bus.busId}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Total Fare: ${totalFare.toStringAsFixed(0)} Tk',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Map with route
+                  SizedBox(
+                    height: 280,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: _buildRouteMap(
+                          routeSegment,
+                          source,
+                          destination,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Stop list with fares
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      itemCount: stationsWithFares.length,
+                      itemBuilder: (context, index) {
+                        final entry = stationsWithFares.entries.toList()[index];
+                        final station = entry.key;
+                        final fare = entry.value;
+                        final isSource = station == source;
+                        final isDestination = station == destination;
+
+                        // Find if this stop has coordinates
+                        final routeStop = routeSegment.firstWhere(
+                          (stop) => stop.name == station,
+                          orElse: () => RouteStopModel(
+                            name: station,
+                            latitude: 0.0,
+                            longitude: 0.0,
+                            fare: fare,
+                          ),
+                        );
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: isSource || isDestination
+                                      ? Colors.green
+                                      : Colors.grey.shade300,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSource || isDestination
+                                        ? Colors.green
+                                        : Colors.grey.shade400,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: TextStyle(
+                                      color: isSource || isDestination
+                                          ? Colors.white
+                                          : Colors.grey.shade700,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      station,
+                                      style: TextStyle(
+                                        fontWeight: isSource || isDestination
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    if (routeStop.latitude != 0.0 ||
+                                        routeStop.longitude != 0.0)
+                                      Text(
+                                        '📍 ${routeStop.latitude.toStringAsFixed(4)}, ${routeStop.longitude.toStringAsFixed(4)}',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey.shade500,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSource || isDestination
+                                      ? Colors.green.shade100
+                                      : Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  '${fare.toStringAsFixed(0)} Tk',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: isSource || isDestination
+                                        ? Colors.green.shade700
+                                        : Colors.grey.shade700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Build route map with OSM routing
+  Widget _buildRouteMap(
+    List<RouteStopModel> routeStops,
+    String source,
+    String destination,
+  ) {
+    if (routeStops.isEmpty || routeStops.length < 2) {
+      return const Center(
+        child: Text('Route not available for this segment'),
+      );
+    }
+
+    // Check if stops have coordinates
+    final hasCoordinates = routeStops.any(
+      (stop) => stop.latitude != 0.0 || stop.longitude != 0.0,
+    );
+
+    if (!hasCoordinates) {
+      return const Center(
+        child: Text('No location data available for this route'),
+      );
+    }
+
+    return FutureBuilder<List<LatLng>>(
+      future: OSMRouteService().buildPolylineFromStops(routeStops),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        List<LatLng> points = snapshot.data ?? [];
+
+        // If OSRM fails, use direct points
+        if (points.isEmpty || points.length < 2) {
+          points = routeStops.map((stop) {
+            // Skip stops without coordinates
+            if (stop.latitude == 0.0 && stop.longitude == 0.0) {
+              return null;
+            }
+            return LatLng(stop.latitude, stop.longitude);
+          }).whereType<LatLng>().toList();
+        }
+
+        if (points.isEmpty || points.length < 2) {
+          return const Center(
+            child: Text('Route cannot be displayed'),
+          );
+        }
+
+        // Create markers
+        final markers = <Marker>[];
+        final validStops = routeStops.where(
+          (stop) => stop.latitude != 0.0 || stop.longitude != 0.0,
+        ).toList();
+
+        for (int i = 0; i < validStops.length; i++) {
+          final stop = validStops[i];
+          final isSource = stop.name == source;
+          final isDestination = stop.name == destination;
+
+          markers.add(
+            Marker(
+              point: LatLng(stop.latitude, stop.longitude),
+              width: 120,
+              height: 50,
+              child: GestureDetector(
+                onTap: () {
+                  // Show stop name on tap
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(stop.name),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSource ? Colors.blue : 
+                           isDestination ? Colors.red : Colors.green,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isSource ? Icons.flag : 
+                        isDestination ? Icons.flag : Icons.location_on,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${i + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Fit bounds to show all points
+        try {
+          final bounds = LatLngBounds.fromPoints(points);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _mapController.fitCamera(
+                CameraFit.bounds(
+                  bounds: bounds,
+                  padding: const EdgeInsets.all(32),
+                ),
+              );
+            }
+          });
+        } catch (_) {
+          // Ignore fit errors
+        }
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: points.first,
+              initialZoom: 13,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'bushub',
+              ),
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: points,
+                    strokeWidth: 5,
+                    color: Colors.green,
+                    borderColor: Colors.white,
+                    borderStrokeWidth: 2,
+                  ),
+                ],
+              ),
+              MarkerLayer(markers: markers),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -302,14 +713,17 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
             ),
           ),
 
+          // Map section
           _buildMapSection(),
 
+          // Search results
           _buildSearchResults(),
         ],
       ),
     );
   }
 
+  // Build map section with user location
   Widget _buildMapSection() {
     final markers = <Marker>[
       if (_userLocation != null)
@@ -470,6 +884,7 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
     );
   }
 
+  // Updated dropdown with separators between items
   Widget _buildDropdown({
     required String label,
     required IconData icon,
@@ -493,13 +908,44 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
                 isExpanded: true,
                 hint: Text(label),
                 value: value,
-                items: items.map((String item) {
-                  return DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item),
-                  );
-                }).toList(),
+                items: [
+                  // Add a divider at the top
+                  const DropdownMenuItem<String>(
+                    value: null,
+                    enabled: false,
+                    child: Divider(
+                      color: Colors.black,
+                      thickness: 2,
+                    ),
+                  ),
+                  ...items.map((String item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item),
+                          // Add divider after each item except the last one
+                          if (items.indexOf(item) != items.length - 1)
+                            const Divider(
+                              color: Colors.black,
+                              thickness: 1,
+                              height: 8,
+                            ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ],
                 onChanged: onChanged,
+                // Customize dropdown style
+                dropdownColor: Colors.white,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+                // Add elevation for better visibility
+                elevation: 8,
               ),
             ),
           ),
@@ -804,6 +1250,7 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
                               ),
                             );
                           }),
+                          
                         ],
                       ),
                     ),

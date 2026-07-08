@@ -1,9 +1,9 @@
-// Edit Bus Screen - Admin can edit existing bus details
-// Can modify bus name, stations, and fares
-
+// lib/screens/admin/edit_bus_screen.dart
 import 'package:flutter/material.dart';
 import '../models/bus_model.dart';
+import '../models/route_stop_model.dart';
 import '../services/firestore_service.dart';
+import 'map_route_picker.dart';
 
 class EditBusScreen extends StatefulWidget {
   final BusModel bus;
@@ -18,194 +18,82 @@ class _EditBusScreenState extends State<EditBusScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firestoreService = FirestoreService();
 
-  // Controllers
-  late TextEditingController _busIdController;
   late TextEditingController _busNameController;
-  final _stationController = TextEditingController();
-  final _fareController = TextEditingController();
-
-  // Lists to store stations and fares
-  late List<String> _stations;
-  late Map<String, double> _faresFromSource;
-
+  final List<RouteStopModel> _routeStops = [];
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-
-    // Initialize with existing bus data
-    _busIdController = TextEditingController(text: widget.bus.busId);
     _busNameController = TextEditingController(text: widget.bus.busName);
-    _stations = List.from(widget.bus.stations);
-    _faresFromSource = Map.from(widget.bus.faresFromSource);
+    _routeStops.addAll(widget.bus.routeStops);
   }
 
   @override
   void dispose() {
-    _busIdController.dispose();
     _busNameController.dispose();
-    _stationController.dispose();
-    _fareController.dispose();
     super.dispose();
   }
 
-  // ✅ Capitalize Each Word validation
-  bool _isValidCapitalized(String text) {
-    final regex = RegExp(r'^([A-Z][a-z]*)(\s[A-Z0-9][a-z]*)*$');
-    return regex.hasMatch(text.trim());
-  }
-
-  // Add new station to the list
-  void _addStation() {
-    String stationName = _stationController.text.trim();
-    String fareText = _fareController.text.trim();
-
-    if (stationName.isEmpty || fareText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter both station name and fare'),
-          backgroundColor: Colors.red,
+  void _openRoutePicker() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapRoutePicker(
+          initialStops: _routeStops,
+          onSave: (updatedStops) {
+            setState(() {
+              _routeStops
+                ..clear()
+                ..addAll(updatedStops);
+            });
+          },
         ),
-      );
-      return;
-    }
-
-    // ❌ Station format validation
-    if (!_isValidCapitalized(stationName)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Station name must be in Capitalize Each Word format\n'
-            'Example: Airport, Khilkhet Bazar',
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    double? fare = double.tryParse(fareText);
-    if (fare == null || fare < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid fare amount'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _stations.add(stationName);
-      _faresFromSource[stationName] = fare;
-      _stationController.clear();
-      _fareController.clear();
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Station added successfully'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 1),
       ),
     );
   }
 
-  // Remove station from the list
-  void _removeStation(String station) {
-    setState(() {
-      _stations.remove(station);
-      _faresFromSource.remove(station);
-    });
-  }
-
-  // Update station fare
-  void _editStationFare(String station, double currentFare) {
-    final fareController = TextEditingController(text: currentFare.toString());
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Edit Fare for $station'),
-        content: TextField(
-          controller: fareController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Fare from Source (Tk)',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              double? newFare = double.tryParse(fareController.text);
-              if (newFare != null && newFare >= 0) {
-                setState(() {
-                  _faresFromSource[station] = newFare;
-                });
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Update'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Update bus in Firestore
   Future<void> _updateBus() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    if (_stations.length < 2) {
+    if (_routeStops.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please add at least 2 stations'),
+          content: Text('Please add at least 2 stops'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      double firstStationFare = _faresFromSource[_stations.first] ?? 0.0;
-
-      Map<String, double> adjustedFares = {};
-      for (String station in _stations) {
-        double fare = _faresFromSource[station] ?? 0.0;
-        adjustedFares[station] = fare - firstStationFare;
-      }
-
-      BusModel updatedBus = BusModel(
-        busId: _busIdController.text.trim(),
-        busName: _busNameController.text.trim(),
-        stations: _stations,
-        faresFromSource: adjustedFares,
-      );
-
       if (widget.bus.documentId == null) {
         throw Exception('Document ID is missing');
       }
+
+      // Add new locations
+      for (final stop in _routeStops) {
+        await _firestoreService.addLocation(stop.name);
+      }
+
+      BusModel updatedBus = BusModel(
+        busId: widget.bus.busId,
+        busName: _busNameController.text.trim(),
+        stations: _routeStops.map((stop) => stop.name).toList(),
+        faresFromSource: {
+          for (final stop in _routeStops) stop.name: stop.fare,
+        },
+        routeStops: List<RouteStopModel>.from(_routeStops),
+      );
 
       await _firestoreService.updateBus(
         widget.bus.documentId!,
         updatedBus,
       );
-
-      for (String station in _stations) {
-        await _firestoreService.addLocation(station);
-      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -227,9 +115,7 @@ class _EditBusScreenState extends State<EditBusScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -248,24 +134,12 @@ class _EditBusScreenState extends State<EditBusScreen> {
           padding: const EdgeInsets.all(16.0),
           children: [
             TextFormField(
-              controller: _busIdController,
-              enabled: false,
-              decoration: InputDecoration(
-                labelText: 'Bus ID',
-                prefixIcon: const Icon(Icons.tag),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
               controller: _busNameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Bus Name / Number',
-                prefixIcon: const Icon(Icons.directions_bus),
+                prefixIcon: Icon(Icons.directions_bus),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
                 ),
               ),
               validator: (value) {
@@ -276,123 +150,74 @@ class _EditBusScreenState extends State<EditBusScreen> {
               },
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Stations',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Route Stops',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _openRoutePicker,
+                  icon: const Icon(Icons.route), // Changed from edit_map
+                  label: Text(
+                    _routeStops.isEmpty ? 'Add Route' : 'Edit Route',
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-
-            // Add new station card (UNCHANGED UI)
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            if (_routeStops.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Column(
                   children: [
-                    const Text(
-                      'Add New Station',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _stationController,
-                      decoration: InputDecoration(
-                        labelText: 'Station Name',
-                        prefixIcon: const Icon(Icons.location_on),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _fareController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Fare from Source (Tk)',
-                        prefixIcon: const Icon(Icons.payments),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _addStation,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Station'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
+                    Icon(Icons.route, size: 48, color: Colors.grey),
+                    SizedBox(height: 8),
+                    Text('No stops added yet'),
                   ],
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Existing stations list (UNCHANGED)
-            if (_stations.isNotEmpty) ...[
-              const Text(
-                'Current Stations',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _stations.length,
-                itemBuilder: (context, index) {
-                  String station = _stations[index];
-                  double fare = _faresFromSource[station] ?? 0.0;
-
+              )
+            else
+              ..._routeStops.asMap().entries.map(
+                (entry) {
+                  final index = entry.key;
+                  final stop = entry.value;
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: Colors.green,
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                        child: Text('${index + 1}'),
                       ),
-                      title: Text(station),
-                      subtitle: Text('Fare: ${fare.toStringAsFixed(0)} Tk'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () =>
-                                _editStationFare(station, fare),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _removeStation(station),
-                          ),
-                        ],
+                      title: Text(stop.name),
+                      subtitle: Text(
+                        'Fare: ${stop.fare.toStringAsFixed(0)} Tk',
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            _routeStops.removeAt(index);
+                          });
+                        },
                       ),
                     ),
                   );
                 },
               ),
-              const SizedBox(height: 24),
-            ],
-
+            const SizedBox(height: 24),
             SizedBox(
+              width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _updateBus,
@@ -407,10 +232,7 @@ class _EditBusScreenState extends State<EditBusScreen> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                         'Update Bus',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
               ),
             ),

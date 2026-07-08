@@ -1,9 +1,11 @@
+// lib/screens/admin/bus_details_screen.dart
 // Bus Details Screen - Shows all buses with Edit and Delete options
 // Admin can view, edit, or delete any bus
 
 import 'package:flutter/material.dart';
-import '../models/bus_model.dart';
-import '../services/firestore_service.dart';
+import '../../models/bus_model.dart';
+import '../../models/route_stop_model.dart';
+import '../../services/firestore_service.dart';
 import 'edit_bus_screen.dart';
 
 class BusDetailsScreen extends StatelessWidget {
@@ -44,6 +46,7 @@ class BusDetailsScreen extends StatelessWidget {
                   Text(
                     'Error: ${snapshot.error}',
                     style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -246,51 +249,97 @@ class BusDetailsScreen extends StatelessWidget {
               const SizedBox(height: 12),
 
               // List of stations with fares
-              ...bus.stations.asMap().entries.map((entry) {
-                int index = entry.key;
-                String station = entry.value;
-                double fare = bus.faresFromSource[station] ?? 0.0;
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 14,
-                        backgroundColor: Colors.green,
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
+              if (bus.routeStops.isNotEmpty)
+                ...bus.routeStops.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  RouteStopModel stop = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 14,
+                          backgroundColor: Colors.green,
+                          child: Text(
+                            '${index + 1}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              station,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                stop.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                            Text(
-                              '${fare.toStringAsFixed(0)} Tk from source',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
+                              Text(
+                                '${stop.fare.toStringAsFixed(0)} Tk',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                      ],
+                    ),
+                  );
+                }).toList()
+              else
+                // Fallback to old stations format
+                ...bus.stations.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  String station = entry.value;
+                  double fare = bus.faresFromSource[station] ?? 0.0;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 14,
+                          backgroundColor: Colors.green,
+                          child: Text(
+                            '${index + 1}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                station,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                '${fare.toStringAsFixed(0)} Tk',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
             ],
           ),
         ),

@@ -1,9 +1,11 @@
+// lib/services/firestore_service.dart
 // Firestore Service - handles all Firebase operations
 // This class provides methods to read and write data from/to Firestore
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/bus_model.dart';
 import '../models/location_model.dart';
+import '../models/route_stop_model.dart';
 
 class FirestoreService {
   // Get Firestore instance
@@ -61,13 +63,17 @@ class FirestoreService {
 
   // ✅ Check if Bus ID already exists
   Future<bool> busIdExists(String busId) async {
-    final snapshot = await _firestore
-        .collection(_busesCollection)
-        .where('busId', isEqualTo: busId)
-        .limit(1)
-        .get();
+    try {
+      final snapshot = await _firestore
+          .collection(_busesCollection)
+          .where('busId', isEqualTo: busId)
+          .limit(1)
+          .get();
 
-    return snapshot.docs.isNotEmpty;
+      return snapshot.docs.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
   }
 
   // Get all buses
@@ -81,6 +87,17 @@ class FirestoreService {
           .map((doc) => BusModel.fromMap(doc.data(), doc.id))
           .toList();
     });
+  }
+
+  // Get a single bus by document ID
+  Future<BusModel?> getBusById(String documentId) async {
+    try {
+      final doc = await _firestore.collection(_busesCollection).doc(documentId).get();
+      if (!doc.exists) return null;
+      return BusModel.fromMap(doc.data()!, doc.id);
+    } catch (e) {
+      throw Exception('Error getting bus: $e');
+    }
   }
 
   // Add a new bus to Firestore
@@ -113,6 +130,62 @@ class FirestoreService {
     }
   }
 
+  // ==================== ROUTE STOP METHODS ====================
+
+  // Get route stops for a specific bus with proper ordering
+  Future<List<RouteStopModel>> getRouteStops(String documentId) async {
+    try {
+      final doc = await _firestore.collection(_busesCollection).doc(documentId).get();
+      if (!doc.exists) return [];
+      
+      final data = doc.data();
+      final routeData = data?['route'] as List<dynamic>?;
+      
+      if (routeData == null || routeData.isEmpty) {
+        // Fallback to stations and fares
+        final stations = List<String>.from(data?['stations'] ?? []);
+        final fares = data?['faresFromSource'] as Map<String, dynamic>? ?? {};
+        
+        return stations.map((name) {
+          final fare = (fares[name] as num?)?.toDouble() ?? 0.0;
+          return RouteStopModel(
+            name: name,
+            latitude: 0.0,
+            longitude: 0.0,
+            fare: fare,
+          );
+        }).toList();
+      }
+      
+      return routeData.map((entry) {
+        return RouteStopModel.fromMap(entry as Map<String, dynamic>);
+      }).toList();
+    } catch (e) {
+      throw Exception('Error getting route stops: $e');
+    }
+  }
+
+  // Update bus route stops
+  Future<void> updateBusRoute(String documentId, List<RouteStopModel> routeStops) async {
+    try {
+      final busDoc = await _firestore.collection(_busesCollection).doc(documentId).get();
+      if (!busDoc.exists) {
+        throw Exception('Bus not found');
+      }
+      
+      // Update with new route data
+      await _firestore.collection(_busesCollection).doc(documentId).update({
+        'route': routeStops.map((stop) => stop.toMap()).toList(),
+        'stations': routeStops.map((stop) => stop.name).toList(),
+        'faresFromSource': {
+          for (final stop in routeStops) stop.name: stop.fare,
+        },
+      });
+    } catch (e) {
+      throw Exception('Error updating route: $e');
+    }
+  }
+
   // ==================== SEARCH & FARE LOGIC ====================
 
   // Search buses between two locations (case-insensitive)
@@ -126,12 +199,13 @@ class FirestoreService {
       for (var doc in snapshot.docs) {
         BusModel bus = BusModel.fromMap(doc.data(), doc.id);
 
+        // Check if both source and destination exist in stations
         int sourceIndex = bus.stations
             .indexWhere((s) => s.toLowerCase() == sourceLC);
         int destIndex = bus.stations
             .indexWhere((s) => s.toLowerCase() == destinationLC);
 
-        if (sourceIndex != -1 && destIndex != -1) {
+        if (sourceIndex != -1 && destIndex != -1 && sourceIndex != destIndex) {
           matchingBuses.add(bus);
         }
       }
@@ -168,7 +242,7 @@ class FirestoreService {
     int destIndex = bus.stations
         .indexWhere((s) => s.toLowerCase() == destinationLC);
 
-    if (sourceIndex == -1 || destIndex == -1) {
+    if (sourceIndex == -1 || destIndex == -1 || sourceIndex == destIndex) {
       return stationsWithFares;
     }
 
@@ -190,8 +264,7 @@ class FirestoreService {
     } else {
       for (int i = sourceIndex; i <= destIndex; i++) {
         String station = bus.stations[i];
-        double fare =
-            (bus.faresFromSource[station] ?? 0.0) - sourceFare;
+        double fare = (bus.faresFromSource[station] ?? 0.0) - sourceFare;
 
         if (station.toLowerCase() != sourceLC && fare < 10) fare = 10;
 
@@ -200,5 +273,40 @@ class FirestoreService {
     }
 
     return stationsWithFares;
+  }
+
+  // Get route stops with coordinates for a specific bus segment
+  List<RouteStopModel> getRouteSegment(
+    BusModel bus,
+    String source,
+    String destination,
+  ) {
+    if (bus.routeStops.isEmpty) {
+      // Fallback: create route stops from stations without coordinates
+      return bus.stations.map((name) => RouteStopModel(
+        name: name,
+        latitude: 0.0,
+        longitude: 0.0,
+        fare: bus.faresFromSource[name] ?? 0.0,
+      )).toList();
+    }
+
+    String sourceLC = source.toLowerCase();
+    String destinationLC = destination.toLowerCase();
+
+    int sourceIndex = bus.routeStops
+        .indexWhere((stop) => stop.name.toLowerCase() == sourceLC);
+    int destIndex = bus.routeStops
+        .indexWhere((stop) => stop.name.toLowerCase() == destinationLC);
+
+    if (sourceIndex == -1 || destIndex == -1 || sourceIndex == destIndex) {
+      return bus.routeStops;
+    }
+
+    if (sourceIndex < destIndex) {
+      return bus.routeStops.sublist(sourceIndex, destIndex + 1);
+    } else {
+      return bus.routeStops.sublist(destIndex, sourceIndex + 1).reversed.toList();
+    }
   }
 }
