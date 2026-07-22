@@ -163,43 +163,100 @@ BusHub provides a complete digital solution by offering:
 
 # 📱 Screenshots
 
-> **Application Preview**  
-> *Replace the placeholder images below with your actual screenshots.*
 
-## 📱 Screenshots
+## 🏠 Home Screen
 
-| Home |
-|------|
-| ![](assets/screenshots/home_screen.png) |
+<p align="center">
+  <a href="assets/screenshots/home_screen.png">
+    <img src="assets/screenshots/home_screen.png" width="260" alt="Home Screen">
+  </a>
+</p>
 
-| Search |
-|--------|
-|  ![](assets/screenshots/search_screen.png) ![](assets/screenshots/search_screen_1.png) ![](assets/screenshots/search_screen_2.png) |
-
-| Route Map |
-|-----------|
-| ![](assets/screenshots/map_view.png) |
-
-| Bus Details |
-|-------------|
-| ![](assets/screenshots/bus_list.png) ![](assets/screenshots/bus_list_1.png) |
-
-| Admin Login |
-|-------------|
-| ![](assets/screenshots/admin_login.png) | 
-
-| Dashboard |
-|-----------|
-| ![](assets/screenshots/admin_dashboard.png) |
-
-| Add Bus |
-|---------|
-| ![](assets/screenshots/add_bus.png) ![](assets/screenshots/add_route.png)| 
-
-| Edit Bus |
-|----------|
-| ![](assets/screenshots/edit_bus.png) |
 ---
+
+## 🔍 Search Screen
+
+<p align="center">
+  <a href="assets/screenshots/search_screen.png">
+    <img src="assets/screenshots/search_screen.png" width="260" alt="Search Screen">
+  </a>
+
+  <a href="assets/screenshots/search_screen_1.png">
+    <img src="assets/screenshots/search_screen_1.png" width="260" alt="Search Screen 1">
+  </a>
+
+  <a href="assets/screenshots/search_screen_2.png">
+    <img src="assets/screenshots/search_screen_2.png" width="260" alt="Search Screen 2">
+  </a>
+</p>
+
+---
+
+## 🗺️ Route Map
+
+<p align="center">
+  <a href="assets/screenshots/map_view.png">
+    <img src="assets/screenshots/map_view.png" width="260" alt="Route Map">
+  </a>
+</p>
+
+---
+
+## 🚌 Bus Details
+
+<p align="center">
+  <a href="assets/screenshots/bus_list.png">
+    <img src="assets/screenshots/bus_list.png" width="260" alt="Bus Details">
+  </a>
+
+  <a href="assets/screenshots/bus_list_1.png">
+    <img src="assets/screenshots/bus_list_1.png" width="260" alt="Bus Details 2">
+  </a>
+</p>
+
+---
+
+## 🔐 Admin Login
+
+<p align="center">
+  <a href="assets/screenshots/admin_login.png">
+    <img src="assets/screenshots/admin_login.png" width="260" alt="Admin Login">
+  </a>
+</p>
+
+---
+
+## 📊 Admin Dashboard
+
+<p align="center">
+  <a href="assets/screenshots/admin_dashboard.png">
+    <img src="assets/screenshots/admin_dashboard.png" width="260" alt="Admin Dashboard">
+  </a>
+</p>
+
+---
+
+## ➕ Add Bus
+
+<p align="center">
+  <a href="assets/screenshots/add_bus.png">
+    <img src="assets/screenshots/add_bus.png" width="260" alt="Add Bus">
+  </a>
+
+  <a href="assets/screenshots/add_route.png">
+    <img src="assets/screenshots/add_route.png" width="260" alt="Add Route">
+  </a>
+</p>
+
+---
+
+## ✏️ Edit Bus
+
+<p align="center">
+  <a href="assets/screenshots/edit_bus.png">
+    <img src="assets/screenshots/edit_bus.png" width="260" alt="Edit Bus">
+  </a>
+</p>---
 
 # 🛠️ Technology Stack
 
