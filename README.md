@@ -1145,8 +1145,6 @@ The following roadmap outlines the planned improvements and future development o
 
 ---
 
-# Footer
-
 <div align="center">
 
 # 🚌 BusHub
