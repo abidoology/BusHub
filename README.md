@@ -168,21 +168,37 @@ BusHub provides a complete digital solution by offering:
 
 ## 📱 Screenshots
 
-| Home | Search |
-|------|--------|
-| ![](assets/screenshots/home_screen.png) | ![](assets/screenshots/search_screen.png) ![](assets/screenshots/search_screen_1.png) ![](assets/screenshots/search_screen_2.png) |
+| Home |
+|------|
+| ![](assets/screenshots/home_screen.png) |
 
-| Route Map | Bus Details |
-|-----------|-------------|
-| ![](assets/screenshots/map_view.png) | ![](assets/screenshots/bus_list.png) ![](assets/screenshots/bus_list_1.png) |
+| Search |
+|--------|
+|  ![](assets/screenshots/search_screen.png) ![](assets/screenshots/search_screen_1.png) ![](assets/screenshots/search_screen_2.png) |
 
-| Admin Login | Dashboard |
-|-------------|-----------|
-| ![](assets/screenshots/admin_login.png) | ![](assets/screenshots/admin_dashboard.png) |
+| Route Map |
+|-----------|
+| ![](assets/screenshots/map_view.png) |
 
-| Add Bus | Edit Bus |
-|---------|----------|
-| ![](assets/screenshots/add_bus.png) ![](assets/screenshots/add_route.png)| ![](assets/screenshots/edit_bus.png) |
+| Bus Details |
+|-------------|
+| ![](assets/screenshots/bus_list.png) ![](assets/screenshots/bus_list_1.png) |
+
+| Admin Login |
+|-------------|
+| ![](assets/screenshots/admin_login.png) | 
+
+| Dashboard |
+|-----------|
+| ![](assets/screenshots/admin_dashboard.png) |
+
+| Add Bus |
+|---------|
+| ![](assets/screenshots/add_bus.png) ![](assets/screenshots/add_route.png)| 
+
+| Edit Bus |
+|----------|
+| ![](assets/screenshots/edit_bus.png) |
 ---
 
 # 🛠️ Technology Stack
