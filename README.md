@@ -168,7 +168,7 @@ BusHub provides a complete digital solution by offering:
 
 | Home Screen | Search Screen | Bus List | Route Map | Admin Login | Admin Dashboard | Add Bus | Edit Bus |
 |--------------|---------------|-----------|-----------|--------------|----------------|----------|----------|
-| ![Home Screen](assets/screenshots/home_screen.png) | ![Search Screen](assets/screenshots/search_screen.png) | ![Bus List](assets/screenshots/bus_list.png) | ![Route Map](assets/screenshots/route_map.png) |  ![Admin Login](assets/screenshots/admin_login.png) | ![Admin Dashboard](assets/screenshots/admin_dashboard.png) |  ![Add Bus](assets/screenshots/add_bus.png) | ![Edit Bus](assets/screenshots/edit_bus.png) |
+| ![Home Screen](assets/screenshots/home_screen.png) | ![Search Screen](assets/screenshots/search_screen.png) ![Search Screen](assets/screenshots/search_screen_1.png) | ![Bus List](assets/screenshots/bus_list.png) | ![Route Map](assets/screenshots/route_map.png) |  ![Admin Login](assets/screenshots/admin_login.png) | ![Admin Dashboard](assets/screenshots/admin_dashboard.png) |  ![Add Bus](assets/screenshots/add_bus.png) | ![Edit Bus](assets/screenshots/edit_bus.png) |
 
 ---
 
