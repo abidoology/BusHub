@@ -256,7 +256,9 @@ BusHub provides a complete digital solution by offering:
   <a href="assets/screenshots/edit_bus.png">
     <img src="assets/screenshots/edit_bus.png" width="260" alt="Edit Bus">
   </a>
-</p>---
+</p>
+
+---
 
 # 🛠️ Technology Stack
 
